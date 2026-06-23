@@ -1,0 +1,13 @@
+gradio
+langgraph
+langchain
+langchain-core
+langchain-openai
+langchain-community
+langchain-chroma
+chromadb
+openai
+pydantic
+python-dotenv
+tiktoken
+
