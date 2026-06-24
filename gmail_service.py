@@ -1,6 +1,8 @@
 import base64
 from email.mime.text import MIMEText
 import os.path
+from pathlib import Path
+import sqlite3
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials 
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -69,6 +71,60 @@ def send_message(to, subject, message_text):
     except HttpError as error:
         print(f"An error occurred: {error}")
         return None
+    
+    
+def check_inbox() :
+    print('Inside check_inbox...')
+    service = get_gmail_service()
+    
+    # Query string: Only unread emails in the inbox
+    search_query = "is:unread category:primary" 
+
+    list_response = service.users().messages().list(
+        userId='me', 
+        q=search_query
+    ).execute()
+
+    messages = list_response.get('messages', [])
+    return service, messages
+
+
+def fetch_new_mails() :
+    print('Inside fetch_new_mails...')
+    db_file = Path(r'C:\AppyProjects\CustomGenAIProjects\ai_meeting_coordination_agent\email_data\email_data.db')
+    processed_actions = [] 
+    service, new_mails = check_inbox()
+    with sqlite3.connect(db_file) as conn: 
+        cursor = conn.cursor() 
+        
+        for mail in new_mails:
+            threadId = mail['threadId']
+            messageId = mail['id'] 
+            cursor.execute(
+                ''' 
+                SELECT * from scheduling_conversations WHERE threadId = ?
+                ''' , (threadId,)
+            )
+            
+            full_email = service.users().messages().get(userId='me', id=messageId).execute() 
+            existing_convo = cursor.fetchone() 
+        
+            if existing_convo is not None:
+                print('This email is a part of email chain....\n')
+                processed_actions.append({
+                    'graph_type':'confirmation',
+                    'email_data':full_email,
+                    'db_record':existing_convo
+                })
+            else:
+                print('A fresh email')
+                processed_actions.append({
+                    'graph_type':'fresh',
+                    'email_data':full_email,
+                    'db_record':None
+                })  
+    return processed_actions
+
 
 if __name__ == '__main__':
    
