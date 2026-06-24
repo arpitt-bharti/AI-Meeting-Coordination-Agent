@@ -95,6 +95,7 @@ def fetch_new_mails() :
     processed_actions = [] 
     service, new_mails = check_inbox()
     with sqlite3.connect(db_file) as conn: 
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor() 
         
         for mail in new_mails:
