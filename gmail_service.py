@@ -14,8 +14,10 @@ from googleapiclient.errors import HttpError
 #SCOPES = ['https://googleapis.com.readonly']
 SCOPES = [
             'https://www.googleapis.com/auth/calendar.readonly',
+            'https://www.googleapis.com/auth/calendar.events',
             'https://www.googleapis.com/auth/gmail.readonly', 
-            'https://www.googleapis.com/auth/gmail.send'
+            'https://www.googleapis.com/auth/gmail.send',
+            'https://www.googleapis.com/auth/gmail.modify'
         ]
 
 def get_gmail_service():
@@ -125,6 +127,19 @@ def fetch_new_mails() :
                     'db_record':None
                 })  
     return processed_actions
+
+
+def mark_email_as_read(messageId):
+    print(f'inside mark_email_as_read for this messageId - {messageId}')
+    service = get_gmail_service()
+    print(f'service - {service}')
+    response = service.users().messages().modify(
+        userId='me',
+        id=messageId,
+        body={'removeLabelIds' : ['UNREAD']} 
+    ).execute()
+    print(response)
+
 
 
 if __name__ == '__main__':
