@@ -242,3 +242,4 @@ Sending emails autonomously carries business risk. The workflow pauses before se
 # License
 
 This project is intended for educational and portfolio purposes.
+
