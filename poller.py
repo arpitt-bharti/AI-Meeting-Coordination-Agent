@@ -9,13 +9,12 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 while True:
-    fetched_emails = fetch_new_mails()
     confirmation_Graph = confirmation_graph_builder.build_confirmation_graph()
     fresh_email_graph = fresh_email_graph_builder.build_fresh_email_graph()
-    print()
+    fetched_emails = fetch_new_mails()
     for mail in fetched_emails: 
         
-        mail_payload = mail['email_data']
+        mail_payload = mail['email_data'] 
         messageId = mail_payload['id'] 
         mail_threadId = mail_payload['threadId'] 
         mail_content = mail_payload.get('snippet', '') 
@@ -30,7 +29,6 @@ while True:
         config = {'configurable' : {'thread_id' : f'mail_session{mail_threadId}'}}
         
         if mail['graph_type'] == 'confirmation': 
-            
             print('invoking confirmation graph...') 
             try : 
                 confirmation_Graph.invoke({ 
@@ -40,7 +38,7 @@ while True:
             
                 state = confirmation_Graph.get_state(config) 
                 if state.next:
-                    approval = input('HELOOOOO !Shall I create an event at the confirmed time slot?') 
+                    approval = input('Shall I create an event at the confirmed time slot?') 
                     confirmation_Graph.invoke(Command(resume=approval), config) 
                     mark_email_as_read(messageId)
                     print('Marked mail as read')
@@ -51,7 +49,7 @@ while True:
             print('invoking fresh email graph...') 
             try:
                 fresh_email_graph.invoke({ 
-                    'messages' : [HumanMessage(content=mail_content)],
+                    'messages' : [HumanMessage(content=mail_content)], 
                     'thread_id' : mail_threadId,
                     'extracted_email_info' : {
                         'sender_email_address' : sender_email
@@ -59,17 +57,11 @@ while True:
                     }, config)  
                 state = fresh_email_graph.get_state(config)
                 
-                # if state.next:
-                #     approval = input('Approve Draft? Yes/no ? ......')
-                #     fresh_email_graph.invoke(Command(resume=approval), config)
-                #     mark_email_as_read(messageId)
-                #     print('Marked mail as read')
-                
                 if state.next:
                     save_pending_approval(
                         thread_id=mail_threadId,
                         graph_type="fresh_email",
-                        recipient=state.values["extracted_email_info"]["sender_email_address"],
+                        recipient=state.values["extracted_email_info"]["sender_email_address"], 
                         agenda=state.values["extracted_email_info"]["agenda"],
                         draft_email=state.values["draft_response"]["body"]
                     )
