@@ -7,5 +7,10 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
 .env
+credentials.json
+token.json
+checkpoints.db
+*.db
+__pycache__/
+.venv/
